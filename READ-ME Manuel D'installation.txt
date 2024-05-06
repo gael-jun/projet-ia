@@ -1,0 +1,36 @@
+PREREQUIS
+
+- Telecharger et installer Racket en laissant les parametres d'installation par defaut. 
+  Puis ajoutez le chemin "C:\Program Files\Racket" à votre variable d'environnement "PATH". 
+	Lien de téléchargement : https://download.racket-lang.org/
+
+- Téléchargez et installez n'importe quel serveur Web local tel que XAMPP/WAMP.
+	Lien de téléchargement : https://www.apachefriends.org/fr/download.html
+	Lien de téléchargement : https://www.wampserver.com/
+
+- Téléchargez le fichier zip "projet-ia.zip" du code source fourni.
+
+
+INSTALLATION DU PROJET
+
+- Ouvrez le panneau de configuration de votre XAMPP/WAMP et démarrez Apache et MySQL.
+
+- Extrayez le fichier zip du code source dans un dossier nommé "projet-ia".
+
+- Si vous utilisez XAMPP, copiez le dossier du code source extrait et collez-le dans le répertoire « htdocs » de XAMPP. 
+
+  Et si vous utilisez WAMP, collez-le dans le répertoire "www".
+
+- Parcourez PHPMyAdmin dans un navigateur. c'est-à-dire http://localhost/phpmyadmin
+
+- Créez une nouvelle base de données nommée "projet_ia".
+
+- Importez le fichier SQL fourni. Le fichier est connu sous le nom de projet_ia.sql et se trouve dans le dossier du projet "projet-ia".
+
+- Parcourez le système expert dans un navigateur. c'est-à-dire http://localhost/projet-ia/.
+
+
+INFORMATIONS D'ACCES PAR DEFAUT
+
+Nom d'utilisateur : utilisateur1
+Mot de passe : utilisateur1

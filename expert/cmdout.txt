@@ -1,0 +1,1 @@
+'(((COVID19 Maux_de_tête temperature_SUP_38 toux Perte_d’odorat) (Maux_de_tête) (temperature_SUP_38) (toux) (Perte_d’odorat)) #t)

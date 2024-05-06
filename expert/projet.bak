@@ -1,0 +1,182 @@
+#lang racket/gui
+(require racket/gui/base)
+(require racket/string)
+
+(define *Lregles* '((a) (b) (d b c) (c e f) (e b) (f e a) (c f a) (h g c) (h d e) (g h d) (k a b j) (j o) (o j)))
+(define BR* '((a) (b) (d b c) (c e f) (e b) (f e a) (c f a) (h g) (h d e) (g h d) (k a b j) (j o) (o j)))
+(define BFinit* '(a b))
+(define H* 'h)
+
+(define dejaEssaye '()); Liste des prémices déjà essayées
+
+(define lregls '())
+
+(define (Lhypotheses rule)
+  (cdr rule))
+
+(define (Conclusion rule)
+  (car rule))
+
+(define (append1 L s)
+  (if (null? L)
+      (list s)
+      (append L (list s)))
+)
+
+
+(define (some pred lst)
+  (cond ((null? lst) #f)
+        ((pred (car lst)) #t)
+        (else (some pred (cdr lst)))))
+
+
+
+(define (Voir-solution solution)
+(affichage solution)
+ (newline)
+(display "autre solution o/n?: ")
+(if (eq? 'o (read))
+#f
+#t))
+
+(define (liste-vers-chaine lst)
+  (cond
+    ((null? lst) "") ; Cas de base : liste vide, renvoie une chaîne vide
+    ((null? (cdr lst)) (car lst)) ; Cas d'une seule valeur, renvoie la valeur seule
+    (else
+      (string-append (car lst) " ET " (liste-vers-chaine (cdr lst)))))) ; Récursivement, ajoute les éléments à la chaîne avec " ET "
+
+
+(define (affichage solution)
+  (for-each
+   (lambda (regle)
+     (cond
+       ((eq? (Lhypotheses regle) '())
+        (printf "Pour prouver ~a on utilise le fait ~a " (Conclusion regle) (Conclusion regle))
+        (newline))
+       (else
+        (printf "Pour prouver ~a on utilise la regle SI ~a ALORS ~a" (Conclusion regle) (liste-vers-chaine (map symbol->string (Lhypotheses regle))) (Conclusion regle))
+     (newline))))   
+   solution))
+
+
+(define i 0)
+(define (demontre21? but Lregles)
+  (letrec ((demontreLButs?
+            (lambda (Lbuts Lregles-utilisees)
+              (if (null? Lbuts)
+                  ;Lregles-utilisees
+                  (Voir-solution Lregles-utilisees)
+                  (some (lambda (regle)
+                          (set! i (+ i 1))
+                          (display i)
+                          (newline)
+                          (if (and (equal? (car Lbuts) (Conclusion regle)) (< i 30))
+                              (demontreLButs? (append (Lhypotheses regle)
+                                                      (cdr Lbuts))
+                                              (append1 Lregles-utilisees regle))
+                              #f))
+                        Lregles)))))
+    (demontreLButs? (list but) '())))
+
+(define BF '())
+(define BFini '())
+(define iBF 0)
+
+(define (chainageArriere H BFinit BR)
+  (if (eq? iBF 0) (set! BF BFinit) (+ 1 2))
+  (if (eq? iBF 0) (set! BFini BFinit) (+ 1 2))
+  
+  (define rules-for-fact '())
+  (define i 0)
+  (if (and (member H BFini) (not (member 'fin lregls))) (set! lregls (append lregls (list H))) (+ 1 2))
+  (cond
+    
+    ((member H BFinit) (list (reverse lregls) #t)) ; Si H correspond à BFinit, H est prouvé
+    (else
+     (set! iBF (+ iBF 1))
+        (set! rules-for-fact (filter (lambda (rul) (equal? H (Conclusion rul))) BR))
+        (let loop ((rules rules-for-fact)); Boucle pour parcourir les règles elligibles
+          (cond
+            ((null? rules) #f) ; Aucune règle ne permet de prouver H
+            (else
+             
+              (let ((rule (car rules)) ; Règle courante
+                    (conclusion (Conclusion (car rules))) ; Conclusion de la règle
+                    (premise (reverse (Lhypotheses (car rules))))); Prémices de la règle
+                
+                (let loop2 ((premises premise) ; Boucle pour vérifier les prémices
+                            (bool #t))
+                 
+                  (if (not (null? premises))
+                      (if (and (member (car premises) dejaEssaye) (eq? (cdr rules) '()))
+                          (set! bool #f) (set! bool #t)) (+ 1 2))
+                  (cond
+                    ((and (not (null? premises)) bool)
+                     
+                      (let ((li (car premises))) ; Prémisse courante
+                        
+                        (if (not (member li dejaEssaye)) ; Vérifier si li n'a pas été essayé
+                            
+                          (begin
+                            (set! dejaEssaye (cons H dejaEssaye)) ; Ajouter li à dejaEssaye
+                            (let ((result (chainageArriere li BF BR))) ; Appel récursif avec li
+                              (set! dejaEssaye '())
+                              (if (pair? result) (set! bool #t) (set! bool #f))) ; Vérifier le résultat
+                            (loop2 (cdr premises) bool))
+                          
+                          (begin
+                            (display "il y'a eu une boucle \n")
+                            (newline)
+                            (loop2 (cdr premises) bool)
+                            (set! lregls '())
+                            (loop (cdr rules))
+                            (set! lregls (append lregls (list 'fin)))
+                            )))) ; Continuer avec les prémices restantes
+                    (else
+
+                     (if (and bool (not (member 'fin lregls))) (set! lregls (append lregls (list rule))) (+ 1 2))
+                      
+                      (if bool ; Si toutes les prémices ont été prouvées
+                        (list (reverse lregls) #t)
+                        (loop (cdr rules)))))))
+              
+              
+        )))))) ; H ne peut ni être prouvé ni être demandé, renvoyer #f
+
+
+;(chainageArriere H* BFinit* BR*)
+
+;(display (reverse lregls))
+
+
+(define (chainageAffiche H BFinit BR)
+  BR
+)
+
+(define args (vector->list (current-command-line-arguments))) ; Convertir en liste
+
+;(chainageAffiche (list-ref args 0) (list-ref args 1) (list-ref args 2))
+
+(define regle-complete '())
+(define regle-cour '())
+(define (transformer-regle-en-liste regle)
+  (let ((regle-liste (string-split regle "!")))
+    (for-each (lambda (regle)
+                (set! regle-cour (append regle-cour (list (map string->symbol (string-split regle ",")))))
+                ) regle-liste))
+  
+  regle-cour)
+
+(define new_BR (transformer-regle-en-liste (list-ref args 2)))
+
+(define (transformer-BF-en-liste BFinit)
+  (map string->symbol (string-split BFinit "!"))
+  )
+
+(define new_BFinit (transformer-BF-en-liste (list-ref args 1)))
+
+(define new_hypo (string->symbol (list-ref args 0)))
+
+(chainageArriere new_hypo new_BFinit new_BR)
+
